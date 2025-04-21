@@ -35,7 +35,7 @@ app.get('/devices', async (req, res) => {
       console.log('🔐 Código de validación requerido...');
       // Aquí deberías obtener el código de validación desde un método que sea adecuado para tu router.
       const validationCode = '12345'; // Aquí debes introducir el código correcto
-      console.log(`✍️ Ingresando código de validación: ${validationCode}`);
+      console.log(✍️ Ingresando código de validación: ${validationCode});
       await page.type('#validata_code', validationCode);
 
       console.log('📩 Enviando código de validación...');
@@ -46,7 +46,7 @@ app.get('/devices', async (req, res) => {
     }
 
     console.log('➡️ Navegando a la lista DHCP...');
-    await page.goto(`${ROUTER_URL}/html/dhcp_user_list_inter.html`, { waitUntil: 'domcontentloaded' });
+    await page.goto(${ROUTER_URL}/html/dhcp_user_list_inter.html, { waitUntil: 'domcontentloaded' });
 
     console.log('🔍 Esperando la tabla de dispositivos...');
     await page.waitForSelector('#user_list');
@@ -84,5 +84,5 @@ app.get('/devices', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
+  console.log(✅ Servidor escuchando en http://localhost:${PORT});
 });
