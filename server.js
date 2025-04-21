@@ -1,51 +1,47 @@
-import express from "express";
-import cors from "cors";
-import pkg from "node-nmap";
+import express from 'express';
+import axios from 'axios';
+import pkg from 'node-nmap';  // Cambié la importación aquí
+import cors from 'cors';
 
-const { NmapScan } = pkg;
-
-// Opcional: especificar manualmente la ubicación de nmap si no está en el PATH
-NmapScan.nmapLocation = "nmap";
+const { NmapScan } = pkg;  // Extraemos NmapScan
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
+// Habilitar CORS
 app.use(cors());
-app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("✅ Backend con Nmap está corriendo.");
-});
-
-app.post("/scan", (req, res) => {
-  const { ipRange } = req.body;
-
-  if (!ipRange) {
-    return res.status(400).json({ error: "Debes enviar un rango o IP" });
+// Ruta para iniciar el escaneo de la red
+app.get('/scan', async (req, res) => {
+  try {
+    const scan = new NmapScan();
+    const network = req.query.network || '192.168.100.0/24'; // IP de la red por defecto
+    
+    scan.nmap('-sn ' + network, function(err, report) {
+      if (err) {
+        return res.status(500).json({ error: 'Error al realizar el escaneo de la red.' });
+      }
+      return res.json({ devices: report });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al realizar la solicitud.' });
   }
-
-  const scan = new NmapScan(ipRange);
-
-  scan.on("complete", data => {
-    const devices = data.map((host, index) => ({
-      id: index + 1,
-      hostname: host.hostname || "unknown",
-      mac: host.mac || "N/A",
-      ip: host.ip || "N/A",
-      status: host.status || "unknown",
-      openPorts: host.openPorts || [],
-    }));
-    res.json(devices);
-  });
-
-  scan.on("error", error => {
-    console.error("❌ Error al escanear:", error);
-    res.status(500).json({ error: "Error al escanear la red" });
-  });
-
-  scan.startScan();
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
+// Ruta para obtener los dispositivos conectados
+app.get('/devices', (req, res) => {
+  axios
+    .get('http://192.168.100.1/html/dhcp_user_list_inter.html')
+    .then(response => {
+      // Aquí procesas los datos que recibes
+      res.json({ devices: response.data });
+    })
+    .catch(error => {
+      res.status(500).json({ error: 'No se pudieron obtener los dispositivos.' });
+    });
+});
+
+// Iniciar el servidor
+app.listen(port, () => {
+  console.log(`Servidor escuchando en http://localhost:${port}`);
 });
